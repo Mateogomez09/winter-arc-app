@@ -140,7 +140,31 @@ export async function pullAllFromSupabase(targetUserId?: string) {
         }
       });
 
-      localStorage.setItem('metis_habits', JSON.stringify([...otherUsersHabits, ...mergedUserHabits]));
+      // Deduplicate by normalized habit name to eliminate any duplicate copies
+      const seenHabitNames = new Set<string>();
+      const deduplicatedUserHabits: any[] = [];
+      const duplicateIdsToDelete: string[] = [];
+
+      mergedUserHabits.forEach(h => {
+        const norm = (h.name || '').trim().toLowerCase();
+        if (norm && !norm.includes('Ã') && !norm.includes('FÃ')) {
+          if (!seenHabitNames.has(norm)) {
+            seenHabitNames.add(norm);
+            deduplicatedUserHabits.push(h);
+          } else {
+            duplicateIdsToDelete.push(h.id);
+          }
+        } else {
+          duplicateIdsToDelete.push(h.id);
+        }
+      });
+
+      localStorage.setItem('metis_habits', JSON.stringify([...otherUsersHabits, ...deduplicatedUserHabits]));
+
+      // Clean up duplicates from Supabase
+      if (duplicateIdsToDelete.length > 0) {
+        supabase.from('habits').delete().in('id', duplicateIdsToDelete).then();
+      }
 
       // Push local-only habits to Supabase sanitized
       if (localOnlyHabits.length > 0) {

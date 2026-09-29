@@ -6,9 +6,9 @@ interface PhoneContainerProps {
 
 export const PhoneContainer: React.FC<PhoneContainerProps> = ({ children }) => {
   return (
-    <div className="min-h-[100dvh] bg-[#050505] flex items-center justify-center p-0 sm:p-4 md:p-6 sm:overflow-hidden">
+    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#050505] flex items-center justify-center p-0 sm:p-4 md:p-6 overflow-hidden">
       {/* Sleek Device Mock Wrapper */}
-      <div className="relative w-full max-w-md sm:w-[390px] min-h-[100dvh] sm:min-h-0 sm:h-[844px] bg-brand-bg sm:rounded-[48px] sm:border-[8px] sm:border-[#1E1E22] sm:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95),inset_0_0_2px_rgba(255,255,255,0.15)] sm:overflow-hidden flex flex-col transition-all duration-300">
+      <div className="relative w-full max-w-md sm:w-[390px] h-[100dvh] sm:h-[844px] bg-brand-bg sm:rounded-[48px] sm:border-[8px] sm:border-[#1E1E22] sm:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95),inset_0_0_2px_rgba(255,255,255,0.15)] overflow-hidden flex flex-col transition-all duration-300">
         
         {/* Notch / Dynamic Island Simulation for Desktop */}
         <div className="hidden sm:flex absolute top-0 left-1/2 -translate-x-1/2 w-[110px] h-[30px] bg-[#1E1E22] rounded-b-[20px] z-50 items-center justify-center border-b border-x border-brand-border">
@@ -28,8 +28,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({ children }) => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,transparent_100%)] mix-blend-overlay"></div>
         </div>
 
-        {/* Main Content Area (Fixed layout, inner content handles scroll) */}
-        <div className="flex-1 flex flex-col sm:overflow-hidden relative z-10 sm:h-full pt-0 sm:pt-6 pb-0 sm:pb-5">
+        {/* Main Content Area (Fixed height container that locks BottomNav at bottom and lets views scroll) */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative z-10 h-full sm:h-full pt-0 sm:pt-6 pb-0 sm:pb-5">
           {children}
         </div>
       </div>

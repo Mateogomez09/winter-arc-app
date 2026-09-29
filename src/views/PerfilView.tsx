@@ -154,7 +154,7 @@ export const PerfilView: React.FC<PerfilViewProps> = ({ user: initialUser }) => 
   const monthLabel = `${monthNames[month]} ${year}`;
 
   return (
-    <div className="min-w-full w-full flex-shrink-0 snap-center overflow-y-auto px-5 pt-4 pb-24 h-full relative">
+    <div className="min-w-full w-full flex-shrink-0 snap-center overflow-y-auto px-5 pt-7 pb-24 h-full relative">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-2xl font-display font-extrabold text-brand-text tracking-tight mt-0.5">

@@ -213,7 +213,7 @@ export const ValueBoardView: React.FC<ValueBoardViewProps> = ({ user, onUserClic
 
   return (
     <div className="min-w-full w-full flex-shrink-0 snap-center h-full relative flex flex-col overflow-hidden bg-brand-bg">
-      <div className="flex items-center justify-between mb-4 px-5 pt-4 flex-shrink-0">
+      <div className="flex items-center justify-between mb-4 px-5 pt-7 flex-shrink-0">
         <div>
           <h1 className="text-2xl font-display font-extrabold text-brand-text tracking-tight mt-0.5">
             {t('Tablón de Valor')}

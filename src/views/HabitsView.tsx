@@ -39,7 +39,7 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
     } catch (e) {}
   }, [user.id]);
 
-  // Auto-cleanup and sanitization for 6-habit rule (4 defaults + max 2 custom)
+  // Auto-cleanup and sanitization for 6-habit rule (4 defaults + max 2 custom, strictly unique names)
   useEffect(() => {
     refreshCompletions();
     try {
@@ -47,10 +47,29 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
       const userHabits = allStoredHabits.filter(h => h.user_id === user.id && !h.archived);
       
       let needsSave = false;
-      
-      // 1. Ensure all 4 defaults exist with pristine names
+      const seenNames = new Set<string>();
+      const uniqueUserHabits: Habit[] = [];
+      const duplicateIdsToRemove: string[] = [];
+
+      // 1. Group user habits by normalized name to eliminate duplicates
+      userHabits.forEach(h => {
+        const norm = (h.name || '').trim().toLowerCase();
+        if (norm && !norm.includes('Ã') && !norm.includes('FÃ')) {
+          if (!seenNames.has(norm)) {
+            seenNames.add(norm);
+            uniqueUserHabits.push(h);
+          } else {
+            duplicateIdsToRemove.push(h.id);
+          }
+        } else {
+          duplicateIdsToRemove.push(h.id);
+        }
+      });
+
+      // 2. Ensure all 4 defaults exist with pristine names
       DEFAULT_HABITS.forEach(defName => {
-        if (!userHabits.some(h => h.name === defName)) {
+        const norm = defName.trim().toLowerCase();
+        if (!seenNames.has(norm)) {
           const newHabit: Habit = {
             id: 'habit_' + Math.random().toString(36).substr(2, 9),
             user_id: user.id,
@@ -64,26 +83,30 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
             archived: false,
             created_at: new Date().toISOString()
           };
-          allStoredHabits.push(newHabit);
-          userHabits.push(newHabit);
+          uniqueUserHabits.push(newHabit);
+          seenNames.add(norm);
           needsSave = true;
         }
       });
 
-      // 2. Filter out corrupted habit names and limit custom habits to max 2
-      const validDefaults = userHabits.filter(h => DEFAULT_HABITS.includes(h.name));
-      const validCustoms = userHabits.filter(h => !DEFAULT_HABITS.includes(h.name) && !h.name.includes('Ã') && !h.name.includes('FÃ'));
-      
-      // Keep only up to 2 custom habits
+      // 3. Separate defaults and custom habits (strictly max 2 customs)
+      const validDefaults = uniqueUserHabits.filter(h => DEFAULT_HABITS.some(d => d.trim().toLowerCase() === h.name.trim().toLowerCase()));
+      const validCustoms = uniqueUserHabits.filter(h => !DEFAULT_HABITS.some(d => d.trim().toLowerCase() === h.name.trim().toLowerCase()));
       const allowedCustoms = validCustoms.slice(0, 2);
-      const allowedIds = new Set([...validDefaults.map(h => h.id), ...allowedCustoms.map(h => h.id)]);
-      
+
+      // Collect extraneous custom habits to remove
+      validCustoms.slice(2).forEach(extra => duplicateIdsToRemove.push(extra.id));
+
+      const finalUserHabits = [...validDefaults, ...allowedCustoms];
       const otherUsersHabits = allStoredHabits.filter(h => h.user_id !== user.id);
-      const finalUserHabits = allStoredHabits.filter(h => h.user_id === user.id && allowedIds.has(h.id));
-      
-      if (allStoredHabits.filter(h => h.user_id === user.id).length !== finalUserHabits.length || needsSave) {
+
+      if (duplicateIdsToRemove.length > 0 || needsSave || userHabits.length !== finalUserHabits.length) {
         localStorage.setItem('metis_habits', JSON.stringify([...otherUsersHabits, ...finalUserHabits]));
         setLocalRefresh(prev => prev + 1);
+
+        if (duplicateIdsToRemove.length > 0) {
+          supabase.from('habits').delete().in('id', duplicateIdsToRemove).then();
+        }
       }
 
       // Always ensure the user's habits exist in Supabase so foreign key constraints on completions never fail
@@ -165,7 +188,16 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
     };
   }, [syncPartnerStatus, refreshCompletions]);
 
-  const allHabits = getHabits(user.id).filter(h => h.user_id === user.id && !h.archived);
+  const rawHabits = getHabits(user.id).filter(h => h.user_id === user.id && !h.archived);
+  const seenHabitNames = new Set<string>();
+  const allHabits: Habit[] = [];
+  for (const h of rawHabits) {
+    const norm = (h.name || '').trim().toLowerCase();
+    if (norm && !seenHabitNames.has(norm)) {
+      seenHabitNames.add(norm);
+      allHabits.push(h);
+    }
+  }
 
   const handleToggleHabit = (habitId: string) => {
     const isCompleted = completions.some(c => c.user_id === user.id && c.habit_id === habitId && c.date === todayStr && c.is_fully_completed !== false);
@@ -308,7 +340,7 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
   };
 
   return (
-    <div className="min-w-full w-full flex-shrink-0 snap-center overflow-y-auto px-5 pt-4 pb-24 h-full relative">
+    <div className="min-w-full w-full flex-shrink-0 snap-center overflow-y-auto px-5 pt-7 pb-24 h-full relative">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-display font-extrabold text-brand-text tracking-tight mt-0.5">
