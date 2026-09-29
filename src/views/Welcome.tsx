@@ -97,7 +97,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
   };
 
   return (
-    <div className="flex-1 h-full flex flex-col justify-between px-6 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),24px)] bg-[#050505] text-white relative overflow-hidden">
+    <div className="flex-1 min-h-[100dvh] sm:min-h-0 sm:h-full flex flex-col justify-between px-6 py-6 bg-[#050505] text-white relative overflow-hidden">
       <style>{`body { background-color: #050505 !important; }`}</style>
       
       {/* Dynamic Background */}
@@ -131,29 +131,33 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
       )}
 
       {/* Main Content Area */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center">
+      <div className="relative z-10 flex-1 flex flex-col justify-between">
         
         {/* Splash Screen */}
         {screen === 'splash' && (
-          <div className="flex flex-col items-center justify-center text-center space-y-8 animate-fade-in w-full max-w-sm mx-auto">
+          <div className="flex-1 flex flex-col justify-between text-center animate-fade-in w-full max-w-sm mx-auto">
             
-            {/* Center Iconic Core */}
-            <div className="relative flex flex-col items-center">
-              <div className="w-24 h-24 rounded-3xl bg-[#0A0A0E]/90 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(122,141,255,0.15)] flex items-center justify-center backdrop-blur-2xl">
-                <Logo size={42} className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
+            {/* Top Balance Space */}
+            <div className="h-6" />
+
+            {/* Center Iconic Hero */}
+            <div className="flex flex-col items-center justify-center space-y-6 my-auto">
+              <div className="w-24 h-24 rounded-3xl bg-[#0A0A0E]/95 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_35px_rgba(122,141,255,0.15)] flex items-center justify-center backdrop-blur-2xl">
+                <Logo size={44} className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
+              </div>
+
+              <div className="space-y-2.5">
+                <h1 className="text-[2.6rem] font-display font-black tracking-tight leading-[1] text-white uppercase">
+                  WINTER ARC
+                </h1>
+                
+                <p className="text-[14px] text-white/50 max-w-[280px] mx-auto leading-relaxed font-medium">
+                  El reto de 90 días para transformar tus hábitos antes de que termine el año.
+                </p>
               </div>
             </div>
 
-            <div className="space-y-2.5">
-              <h1 className="text-[2.5rem] font-display font-black tracking-tight leading-[1] text-white uppercase">
-                WINTER ARC
-              </h1>
-              
-              <p className="text-[14px] text-white/50 max-w-[280px] mx-auto leading-relaxed font-medium">
-                El reto de 90 días para transformar tus hábitos antes de que termine el año.
-              </p>
-            </div>
-
+            {/* Bottom Actions & Footer Docked */}
             <div className="space-y-3 w-full pt-4">
               <button 
                 onClick={() => {
@@ -173,17 +177,21 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full py-3 bg-transparent text-white/50 hover:text-white font-semibold text-[13px] transition-all duration-300 cursor-pointer"
+                className="w-full py-2.5 bg-transparent text-white/50 hover:text-white font-semibold text-[13px] transition-all duration-300 cursor-pointer"
               >
                 Ya tengo una cuenta • Iniciar Sesión
               </button>
+
+              <p className="text-[10px] text-white/25 uppercase tracking-widest font-semibold pt-2">
+                DISCIPLINA • CONSTANCIA • VICTORIA
+              </p>
             </div>
           </div>
         )}
 
         {/* Login Screen */}
         {screen === 'login' && (
-          <div className="flex flex-col justify-center animate-fade-in w-full max-w-sm mx-auto space-y-6">
+          <div className="flex-1 flex flex-col justify-center animate-fade-in w-full max-w-sm mx-auto space-y-6">
             <div className="space-y-2 text-center">
               <h2 className="text-3xl font-display font-extrabold text-white tracking-tight">Bienvenido de vuelta</h2>
               <p className="text-xs text-white/50">Inicia sesión para mantener tu racha del Winter Arc.</p>
@@ -282,25 +290,25 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
 
         {/* Register Screen */}
         {screen === 'register' && (
-          <div className="flex flex-col justify-center animate-fade-in w-full max-w-sm mx-auto space-y-5">
+          <div className="flex-1 flex flex-col justify-center animate-fade-in w-full max-w-sm mx-auto space-y-4">
             <div className="space-y-1.5 text-center">
               <h2 className="text-3xl font-display font-extrabold text-white tracking-tight">Crea tu cuenta</h2>
               <p className="text-xs text-white/50">Empieza tu reto de 90 días hoy mismo.</p>
             </div>
 
             {errorMsg && (
-              <div className="p-3.5 bg-brand-red/15 border border-brand-red/30 rounded-2xl text-brand-red text-xs text-center font-medium animate-shake">
+              <div className="p-3 bg-brand-red/15 border border-brand-red/30 rounded-2xl text-brand-red text-xs text-center font-medium animate-shake">
                 {errorMsg}
               </div>
             )}
 
             {successMsg && (
-              <div className="p-3.5 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-emerald-400 text-xs text-center font-medium">
+              <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-emerald-400 text-xs text-center font-medium">
                 {successMsg}
               </div>
             )}
 
-            <form onSubmit={handleRegister} className="space-y-3.5">
+            <form onSubmit={handleRegister} className="space-y-3">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest ml-1">Nombre</label>
                 <div className="relative group">
@@ -397,7 +405,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
 
         {/* Forgot Password Screen */}
         {screen === 'forgot_password' && (
-          <div className="flex flex-col justify-center animate-fade-in w-full max-w-sm mx-auto space-y-6">
+          <div className="flex-1 flex flex-col justify-center animate-fade-in w-full max-w-sm mx-auto space-y-6">
             <div className="space-y-2 text-center">
               <h2 className="text-3xl font-display font-extrabold text-white tracking-tight">Recuperar contraseña</h2>
               <p className="text-xs text-white/50">Introduce tu correo y te enviaremos las instrucciones de restablecimiento.</p>
@@ -465,13 +473,6 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
           </div>
         )}
 
-      </div>
-
-      {/* Footer Copy */}
-      <div className="relative z-10 text-center pb-2">
-        <p className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">
-          DISCIPLINA • CONSTANCIA • VICTORIA
-        </p>
       </div>
     </div>
   );

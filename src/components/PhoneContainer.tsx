@@ -6,9 +6,9 @@ interface PhoneContainerProps {
 
 export const PhoneContainer: React.FC<PhoneContainerProps> = ({ children }) => {
   return (
-    <div className="fixed inset-0 w-full overflow-hidden bg-[#070707] flex items-center justify-center p-0 sm:p-4 md:p-6">
+    <div className="min-h-[100dvh] bg-[#050505] flex items-center justify-center p-0 sm:p-4 md:p-6 sm:overflow-hidden">
       {/* Sleek Device Mock Wrapper */}
-      <div className="relative w-full max-w-md sm:w-[390px] h-full sm:h-[844px] bg-brand-bg sm:rounded-[48px] sm:border-[8px] sm:border-[#1E1E22] sm:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95),inset_0_0_2px_rgba(255,255,255,0.15)] overflow-hidden flex flex-col transition-all duration-300">
+      <div className="relative w-full max-w-md sm:w-[390px] min-h-[100dvh] sm:min-h-0 sm:h-[844px] bg-brand-bg sm:rounded-[48px] sm:border-[8px] sm:border-[#1E1E22] sm:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95),inset_0_0_2px_rgba(255,255,255,0.15)] sm:overflow-hidden flex flex-col transition-all duration-300">
         
         {/* Notch / Dynamic Island Simulation for Desktop */}
         <div className="hidden sm:flex absolute top-0 left-1/2 -translate-x-1/2 w-[110px] h-[30px] bg-[#1E1E22] rounded-b-[20px] z-50 items-center justify-center border-b border-x border-brand-border">
@@ -29,7 +29,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({ children }) => {
         </div>
 
         {/* Main Content Area (Fixed layout, inner content handles scroll) */}
-        <div className="flex-1 flex flex-col overflow-hidden relative z-10 h-full">
+        <div className="flex-1 flex flex-col sm:overflow-hidden relative z-10 sm:h-full pt-0 sm:pt-6 pb-0 sm:pb-5">
           {children}
         </div>
       </div>
