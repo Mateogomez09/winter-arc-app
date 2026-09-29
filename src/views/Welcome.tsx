@@ -121,13 +121,13 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
             <ChevronLeft size={20} className="text-white/70" />
           </button>
         ) : (
-          <div className="w-10"></div>
+          <div className="w-10" />
         )}
-        <div className="flex items-center space-x-2.5">
-          <Logo size={28} className="text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]" />
-          <span className="font-display font-black text-xl tracking-wider text-white uppercase">WINTER ARC</span>
+        <div className="flex items-center space-x-2">
+          <Logo size={24} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
+          <span className="font-display font-black text-sm tracking-widest text-white uppercase">WINTER ARC</span>
         </div>
-        <div className="w-10"></div>
+        <div className="w-10" />
       </div>
 
       {/* Main Content Area */}
@@ -135,51 +135,33 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
         
         {/* Splash Screen */}
         {screen === 'splash' && (
-          <div className="flex flex-col items-center justify-center text-center space-y-9 animate-fade-in w-full max-w-sm mx-auto">
+          <div className="flex flex-col items-center justify-center text-center space-y-8 animate-fade-in w-full max-w-sm mx-auto">
             
-            <div className="space-y-3">
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold text-brand-primary mb-2">
-                <Flame size={12} className="text-brand-primary" />
-                <span>90 DÍAS DE TRANSFORMACIÓN</span>
+            {/* Center Iconic Core */}
+            <div className="relative flex flex-col items-center">
+              <div className="w-24 h-24 rounded-3xl bg-[#0A0A0E]/90 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(122,141,255,0.15)] flex items-center justify-center backdrop-blur-2xl">
+                <Logo size={42} className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
               </div>
-              <h1 className="text-[3rem] font-display font-black tracking-tight leading-[1] text-white">
-                Disciplina <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/40 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                  Absoluta.
-                </span>
+            </div>
+
+            <div className="space-y-2.5">
+              <h1 className="text-[2.5rem] font-display font-black tracking-tight leading-[1] text-white uppercase">
+                WINTER ARC
               </h1>
               
-              <p className="text-[14px] text-white/50 max-w-[320px] mx-auto leading-relaxed font-medium">
-                Sin excusas. Sin distracciones. El reto de invierno diseñado para forjar hábitos inquebrantables y elevar tu nivel.
+              <p className="text-[14px] text-white/50 max-w-[280px] mx-auto leading-relaxed font-medium">
+                El reto de 90 días para transformar tus hábitos antes de que termine el año.
               </p>
             </div>
 
-            {/* Central Visual Showcase */}
-            <div className="relative w-full h-[180px] flex items-center justify-center my-2">
-              <div className="absolute inset-0 bg-brand-primary/10 blur-3xl rounded-full opacity-60"></div>
-              
-              {/* Center Core Logo */}
-              <div className="relative z-20 w-24 h-24 rounded-full bg-[#0A0A0C] border border-white/15 shadow-[0_20px_40px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.1)] flex flex-col items-center justify-center">
-                <Logo size={36} className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
-              </div>
-              
-              {/* Floating badges */}
-              <div className="absolute top-2 right-6 px-3 py-1.5 bg-[#121214]/90 backdrop-blur-xl border border-white/10 rounded-xl text-[10px] font-bold text-emerald-400 shadow-lg rotate-6">
-                🔥 100% Hábitos
-              </div>
-              <div className="absolute bottom-4 left-6 px-3 py-1.5 bg-[#121214]/90 backdrop-blur-xl border border-white/10 rounded-xl text-[10px] font-bold text-cyan-400 shadow-lg -rotate-6">
-                ❄️ Winter Arc 2026
-              </div>
-            </div>
-
-            <div className="space-y-3.5 w-full pt-1">
+            <div className="space-y-3 w-full pt-4">
               <button 
                 onClick={() => {
                   setScreen('register');
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full py-4 bg-white text-black font-extrabold text-[15px] rounded-2xl flex items-center justify-center space-x-2 hover:bg-white/90 hover:scale-[1.01] active:scale-[0.98] transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer"
+                className="w-full py-4 bg-white text-black font-extrabold text-[15px] rounded-2xl flex items-center justify-center space-x-2 hover:bg-white/90 active:scale-[0.98] transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer"
               >
                 <span>Comenzar mi Winter Arc</span>
                 <ArrowRight size={18} />
@@ -191,9 +173,9 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full py-3.5 bg-transparent text-white/60 hover:text-white font-semibold text-[14px] transition-all duration-300 cursor-pointer"
+                className="w-full py-3 bg-transparent text-white/50 hover:text-white font-semibold text-[13px] transition-all duration-300 cursor-pointer"
               >
-                Ya tengo una cuenta
+                Ya tengo una cuenta • Iniciar Sesión
               </button>
             </div>
           </div>
