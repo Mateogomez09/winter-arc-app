@@ -97,7 +97,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between px-6 py-8 bg-[#050505] text-white relative overflow-hidden min-h-[100dvh]">
+    <div className="flex-1 h-full flex flex-col justify-between px-6 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),24px)] bg-[#050505] text-white relative overflow-hidden">
       <style>{`body { background-color: #050505 !important; }`}</style>
       
       {/* Dynamic Background */}
@@ -107,9 +107,9 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,transparent_100%)] mix-blend-overlay"></div>
       </div>
 
-      {/* Brand Header */}
-      <div className="relative z-10 flex items-center justify-between w-full">
-        {screen !== 'splash' ? (
+      {/* Brand Header (Only on Auth sub-screens) */}
+      {screen !== 'splash' ? (
+        <div className="relative z-10 flex items-center justify-between w-full pt-1">
           <button 
             onClick={() => {
               setScreen('splash');
@@ -120,15 +120,15 @@ export const Welcome: React.FC<WelcomeProps> = ({ onAuthSuccess }) => {
           >
             <ChevronLeft size={20} className="text-white/70" />
           </button>
-        ) : (
+          <div className="flex items-center space-x-2">
+            <Logo size={22} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
+            <span className="font-display font-black text-xs tracking-widest text-white uppercase">WINTER ARC</span>
+          </div>
           <div className="w-10" />
-        )}
-        <div className="flex items-center space-x-2">
-          <Logo size={24} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
-          <span className="font-display font-black text-sm tracking-widest text-white uppercase">WINTER ARC</span>
         </div>
-        <div className="w-10" />
-      </div>
+      ) : (
+        <div className="h-2" />
+      )}
 
       {/* Main Content Area */}
       <div className="relative z-10 flex-1 flex flex-col justify-center">

@@ -76,7 +76,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="flex-1 flex flex-col justify-between px-6 py-8 bg-[#050505] text-white relative overflow-hidden min-h-[100dvh] select-none"
+      className="flex-1 h-full flex flex-col justify-between px-6 pt-[max(env(safe-area-inset-top),20px)] pb-[max(env(safe-area-inset-bottom),20px)] bg-[#050505] text-white relative overflow-hidden select-none"
     >
       <style>{`body { background-color: #050505 !important; }`}</style>
 
