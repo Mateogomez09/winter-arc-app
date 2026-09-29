@@ -1,0 +1,18 @@
+{
+  "short_name": "Winter Arc",
+  "name": "Winter Arc - 90 Días de Disciplina",
+  "description": "El reto de 90 días para transformar tus hábitos y disciplina.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "display": "standalone",
+  "orientation": "portrait"
+}
