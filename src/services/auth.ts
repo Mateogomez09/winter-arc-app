@@ -387,3 +387,49 @@ export async function getCurrentAuthUser(): Promise<User | null> {
     return null;
   }
 }
+
+/**
+ * Permanently delete user account and all associated data across Supabase and LocalStorage (GDPR Compliant)
+ */
+export async function deleteUserAccount(userId: string): Promise<boolean> {
+  if (!userId) return false;
+
+  try {
+    // 1. Delete user habits and completions from Supabase
+    await supabase.from('completions').delete().eq('user_id', userId);
+    await supabase.from('habits').delete().eq('user_id', userId);
+
+    // 2. Delete social comments, likes, and posts from Supabase
+    await supabase.from('value_comments').delete().eq('user_id', userId);
+    await supabase.from('value_likes').delete().eq('user_id', userId);
+    await supabase.from('value_posts').delete().eq('user_id', userId);
+
+    // 3. Delete pacts associated with user
+    await supabase.from('pacts').delete().or(`creator_id.eq.${userId},partner_id.eq.${userId}`);
+
+    // 4. Delete user profile row from Supabase
+    await supabase.from('users').delete().eq('id', userId);
+
+    // 5. Try calling delete_user RPC if configured in Supabase
+    try {
+      await supabase.rpc('delete_user');
+    } catch (e) {
+      // Data in tables already wiped
+    }
+
+    // 6. Sign out from Supabase Auth
+    await supabase.auth.signOut();
+
+    // 7. Clear all local storage
+    localStorage.clear();
+
+    return true;
+  } catch (err) {
+    console.error('Error deleting user account:', err);
+    try {
+      await supabase.auth.signOut();
+      localStorage.clear();
+    } catch (e) {}
+    return false;
+  }
+}

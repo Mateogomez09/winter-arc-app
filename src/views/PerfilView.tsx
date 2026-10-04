@@ -10,7 +10,7 @@ import { getHabits, getAllTasks, getLocalDateString } from '../services/db';
 import { SettingsView } from './SettingsView';
 import { EditProfileModal } from '../components/EditProfileModal';
 import { getAvatarFrame, getNameColor } from '../utils/profileCustomization';
-import { signOutUser } from '../services/auth';
+import { signOutUser, deleteUserAccount } from '../services/auth';
 import { createPortal } from 'react-dom';
 
 interface PerfilViewProps {
@@ -30,8 +30,12 @@ export const PerfilView: React.FC<PerfilViewProps> = ({ user: initialUser }) => 
   };
 
   const handleDeleteAccount = async () => {
-    await signOutUser();
-    localStorage.clear();
+    if (currentUser?.id) {
+      await deleteUserAccount(currentUser.id);
+    } else {
+      await signOutUser();
+      localStorage.clear();
+    }
     window.location.reload();
   };
 
