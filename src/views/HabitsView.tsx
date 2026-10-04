@@ -30,7 +30,7 @@ const SUGGESTED_HABITS: HabitSuggestion[] = [
     name: 'Beber 2.5L de agua',
     icon: Droplets,
     color: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-    desc: 'Hidratación constante (edita la cantidad a tu gusto)'
+    desc: 'Edita los litros según tu objetivo'
   },
   {
     name: 'Leer mínimo 10 páginas',
@@ -477,7 +477,6 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
                 </label>
                 <div className="relative">
                   <input 
-                    autoFocus
                     type="text" 
                     placeholder={t('Ej: Beber 3L de agua, Estudiar 1h...')}
                     className="w-full bg-brand-bg border border-brand-border focus:border-brand-primary text-brand-text rounded-2xl px-4 py-3.5 text-sm focus:outline-none transition-all pr-9 shadow-inner"
