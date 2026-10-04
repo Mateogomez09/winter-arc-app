@@ -758,9 +758,9 @@ export function registerUser(name: string, username: string, email: string, pass
   setItem(KEYS.USERS, users);
   localStorage.setItem(KEYS.CURRENT_USER_ID, newUser.id);
   
-  // Inject 4 default habits for Winter Arc
+  // Inject 3 default habits for Winter Arc
   const habits = getItem<Habit[]>(KEYS.HABITS);
-  const defaultHabits = ['Leer 10 páginas', 'Entrenar', 'Comer saludable', 'Levantarse pronto'];
+  const defaultHabits = ['Ejercicio físico 1 hora', 'Buena rutina de sueño', '30 mins aprendiendo algo'];
   defaultHabits.forEach(name => {
     habits.push({
       id: 'habit_' + Math.random().toString(36).substr(2, 9),

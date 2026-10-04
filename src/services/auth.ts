@@ -117,8 +117,8 @@ export async function signUpUser(
       console.warn('Note: Could not immediately upsert user row in Supabase:', dbErr);
     }
 
-    // 2. Initialize 4 default Winter Arc habits for this user
-    const defaultHabitNames = ['Leer 10 páginas', 'Entrenar', 'Comer saludable', 'Levantarse pronto'];
+    // 2. Initialize 3 default Winter Arc habits for this user
+    const defaultHabitNames = ['Ejercicio físico 1 hora', 'Buena rutina de sueño', '30 mins aprendiendo algo'];
     const initialHabits: Habit[] = defaultHabitNames.map(hName => ({
       id: `habit_${data.user!.id.slice(0, 8)}_${Math.random().toString(36).substring(2, 7)}`,
       user_id: data.user!.id,

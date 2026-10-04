@@ -12,7 +12,8 @@ interface HabitsViewProps {
   user: User;
 }
 
-const DEFAULT_HABITS = ['Leer 10 páginas', 'Entrenar', 'Comer saludable', 'Levantarse pronto'];
+const DEFAULT_HABITS = ['Ejercicio físico 1 hora', 'Buena rutina de sueño', '30 mins aprendiendo algo'];
+const LEGACY_DEFAULT_HABITS = ['Leer 10 páginas', 'Entrenar', 'Comer saludable', 'Levantarse pronto'];
 
 export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
     } catch (e) {}
   }, [user.id]);
 
-  // Auto-cleanup and sanitization for 6-habit rule (4 defaults + max 2 custom, strictly unique names)
+  // Auto-cleanup and sanitization for 6-habit rule (3 defaults + max 3 custom, strictly unique names)
   useEffect(() => {
     refreshCompletions();
     try {
@@ -51,10 +52,12 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
       const uniqueUserHabits: Habit[] = [];
       const duplicateIdsToRemove: string[] = [];
 
-      // 1. Group user habits by normalized name to eliminate duplicates
+      // 1. Group user habits by normalized name to eliminate duplicates and purge legacy defaults
       userHabits.forEach(h => {
         const norm = (h.name || '').trim().toLowerCase();
-        if (norm && !norm.includes('Ã') && !norm.includes('FÃ')) {
+        const isLegacy = LEGACY_DEFAULT_HABITS.some(l => l.trim().toLowerCase() === norm);
+        
+        if (norm && !norm.includes('Ã') && !norm.includes('FÃ') && !isLegacy) {
           if (!seenNames.has(norm)) {
             seenNames.add(norm);
             uniqueUserHabits.push(h);
@@ -66,7 +69,7 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
         }
       });
 
-      // 2. Ensure all 4 defaults exist with pristine names
+      // 2. Ensure all 3 official defaults exist with pristine names
       DEFAULT_HABITS.forEach(defName => {
         const norm = defName.trim().toLowerCase();
         if (!seenNames.has(norm)) {
@@ -89,13 +92,13 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
         }
       });
 
-      // 3. Separate defaults and custom habits (strictly max 2 customs)
+      // 3. Separate defaults and custom habits (strictly max 3 customs)
       const validDefaults = uniqueUserHabits.filter(h => DEFAULT_HABITS.some(d => d.trim().toLowerCase() === h.name.trim().toLowerCase()));
       const validCustoms = uniqueUserHabits.filter(h => !DEFAULT_HABITS.some(d => d.trim().toLowerCase() === h.name.trim().toLowerCase()));
-      const allowedCustoms = validCustoms.slice(0, 2);
+      const allowedCustoms = validCustoms.slice(0, 3);
 
       // Collect extraneous custom habits to remove
-      validCustoms.slice(2).forEach(extra => duplicateIdsToRemove.push(extra.id));
+      validCustoms.slice(3).forEach(extra => duplicateIdsToRemove.push(extra.id));
 
       const finalUserHabits = [...validDefaults, ...allowedCustoms];
       const otherUsersHabits = allStoredHabits.filter(h => h.user_id !== user.id);

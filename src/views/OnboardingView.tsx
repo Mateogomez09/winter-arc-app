@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  Flame, BookOpen, Dumbbell, Salad, Sunrise, 
+  Flame, BookOpen, Dumbbell, Moon, 
   Sparkles, ArrowRight, CheckCircle2, ChevronRight, ChevronLeft,
   Trophy, Handshake, Bell, BellRing, Shield, Swords, Clock, Check
 } from 'lucide-react';
@@ -10,7 +10,7 @@ import { PRESET_AVATARS } from '../utils/profileCustomization';
 import { updateUserProfile } from '../services/db';
 import { requestNotificationPermission, areNotificationsEnabled, isNotificationSupported } from '../services/notificationService';
 
-export const ONBOARDING_VERSION = 'v3_notifications_added';
+export const ONBOARDING_VERSION = 'v4_final_habits';
 
 interface OnboardingViewProps {
   user: User;
@@ -161,62 +161,57 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
           </div>
         )}
 
-        {/* STEP 2: Los 4 Hábitos Innegociables */}
+        {/* STEP 2: Los 3 Hábitos Innegociables */}
         {step === 2 && (
           <div className="space-y-5 animate-fade-in max-w-xs mx-auto w-full">
             <div className="text-center space-y-1">
               <h2 className="text-2xl font-display font-black tracking-tight text-white">
-                4 Hábitos Base
+                3 Hábitos Innegociables
               </h2>
               <p className="text-xs text-white/50">
-                La base innegociable de cada día durante los 90 días.
+                La base diaria obligatoria durante los 90 días del Winter Arc.
               </p>
             </div>
 
             <div className="space-y-2.5 pt-1">
               <div className="flex items-center space-x-3 p-3.5 rounded-2xl bg-[#0F0F12]/80 border border-white/10 backdrop-blur-sm">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center shrink-0">
-                  <BookOpen size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white">Leer 10 páginas</p>
-                  <p className="text-[10px] text-white/40">Enfoque mental diario</p>
-                </div>
-                <CheckCircle2 size={16} className="text-brand-primary shrink-0" />
-              </div>
-
-              <div className="flex items-center space-x-3 p-3.5 rounded-2xl bg-[#0F0F12]/80 border border-white/10 backdrop-blur-sm">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
                   <Dumbbell size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white">Entrenar</p>
-                  <p className="text-[10px] text-white/40">Exigencia física diaria</p>
+                  <p className="text-xs font-bold text-white">Ejercicio físico 1 hora</p>
+                  <p className="text-[10px] text-white/40">Exigencia física y disciplina corporal</p>
                 </div>
                 <CheckCircle2 size={16} className="text-brand-primary shrink-0" />
               </div>
 
               <div className="flex items-center space-x-3 p-3.5 rounded-2xl bg-[#0F0F12]/80 border border-white/10 backdrop-blur-sm">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
-                  <Salad size={18} />
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0">
+                  <Moon size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white">Comer saludable</p>
-                  <p className="text-[10px] text-white/40">Nutrición y energía limpia</p>
+                  <p className="text-xs font-bold text-white">Buena rutina de sueño</p>
+                  <p className="text-[10px] text-white/40">Descanso, recuperación y horario fijo</p>
                 </div>
                 <CheckCircle2 size={16} className="text-brand-primary shrink-0" />
               </div>
 
               <div className="flex items-center space-x-3 p-3.5 rounded-2xl bg-[#0F0F12]/80 border border-white/10 backdrop-blur-sm">
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center shrink-0">
-                  <Sunrise size={18} />
+                  <BookOpen size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white">Levantarse pronto</p>
-                  <p className="text-[10px] text-white/40">Gana el día desde temprano</p>
+                  <p className="text-xs font-bold text-white">30 mins aprendiendo algo</p>
+                  <p className="text-[10px] text-white/40">Lectura o nuevas habilidades diarias</p>
                 </div>
                 <CheckCircle2 size={16} className="text-brand-primary shrink-0" />
               </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-brand-primary/10 border border-brand-primary/20 text-center">
+              <p className="text-[11px] text-white/70">
+                Podrás añadir hasta <strong className="text-brand-primary">3 hábitos personales</strong> extra dentro de la app.
+              </p>
             </div>
           </div>
         )}
