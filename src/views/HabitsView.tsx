@@ -249,9 +249,9 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
   const pendingHabits = allHabits.filter(h => !completions.some(c => c.user_id === user.id && c.habit_id === h.id && c.date === todayStr && c.is_fully_completed !== false));
   const completedHabits = allHabits.filter(h => completions.some(c => c.user_id === user.id && c.habit_id === h.id && c.date === todayStr && c.is_fully_completed !== false));
 
-  // Count custom habits to determine remaining slots (max 2 custom habits)
+  // Count custom habits to determine remaining slots (max 3 custom habits)
   const customHabitsCount = allHabits.filter(h => !DEFAULT_HABITS.includes(h.name)).length;
-  const emptySlots = Math.max(0, 2 - customHabitsCount);
+  const emptySlots = Math.max(0, 3 - customHabitsCount);
 
   const renderHabit = (habit: Habit, isCompleted: boolean) => {
     const isDefault = DEFAULT_HABITS.includes(habit.name);
