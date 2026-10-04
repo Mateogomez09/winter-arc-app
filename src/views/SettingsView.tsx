@@ -3,12 +3,19 @@ import { useTranslation } from "react-i18next";
 import { 
   ArrowLeft, Shield, FileText, Lock, HeartHandshake, 
   HelpCircle, LogOut, Trash2, AlertTriangle, X, 
-  ChevronRight, CheckCircle2, User as UserIcon, Mail, Sparkles, Globe, Clock 
+  ChevronRight, CheckCircle2, User as UserIcon, Mail, Sparkles, Globe, Clock, Bell, BellRing, Check, Send 
 } from 'lucide-react';
 import { User } from '../types';
 import { createPortal } from 'react-dom';
 import { ONBOARDING_VERSION } from './OnboardingView';
 import { getUserTimezone } from '../services/db';
+import { 
+  areNotificationsEnabled, 
+  requestNotificationPermission, 
+  disableNotifications, 
+  sendLocalNotification, 
+  isNotificationSupported 
+} from '../services/notificationService';
 
 interface SettingsViewProps {
   user: User;
@@ -29,6 +36,28 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [activePolicy, setActivePolicy] = useState<PolicyType>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [notifsActive, setNotifsActive] = useState(() => areNotificationsEnabled());
+  const [testSent, setTestSent] = useState(false);
+
+  const handleToggleNotifs = async () => {
+    if (notifsActive) {
+      disableNotifications();
+      setNotifsActive(false);
+    } else {
+      const granted = await requestNotificationPermission();
+      setNotifsActive(granted);
+    }
+  };
+
+  const handleSendTest = async () => {
+    setTestSent(true);
+    await sendLocalNotification({
+      title: 'WINTER ARC • Prueba de Notificación ⚔️',
+      body: 'Todo listo. El sistema de avisos de disciplina y pactos está activo.',
+      tag: 'test-notification'
+    });
+    setTimeout(() => setTestSent(false), 2500);
+  };
 
   return (
     <div className="min-w-full w-full flex-shrink-0 snap-center h-full relative flex flex-col bg-brand-bg overflow-hidden animate-fade-in">
@@ -99,6 +128,78 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <p className="text-[11px] text-brand-text-muted leading-relaxed pt-1.5 border-t border-brand-border/40">
               {t('Tus hábitos, tareas y rachas se reinician automáticamente a las 00:00 (medianoche) de tu país o ciudad. Si viajas o utilizas la app en México, España o cualquier lugar del mundo, el progreso se adapta con precisión a tu huso horario local.')}
             </p>
+          </div>
+        </div>
+
+        {/* Discipline Notifications Section */}
+        <div>
+          <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-brand-text-muted mb-2 px-1">
+            {t('Avisos de Disciplina y Pactos')}
+          </h2>
+          <div className="bg-brand-card border border-brand-border rounded-2xl p-4 shadow-sm space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+                  <BellRing size={16} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-brand-text">{t('Notificaciones Push')}</p>
+                  <p className="text-[10px] text-brand-text-muted">
+                    {notifsActive ? t('Activadas y listas en este dispositivo') : t('Desactivadas')}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleToggleNotifs}
+                className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                  notifsActive
+                    ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400'
+                    : 'bg-brand-primary text-black hover:bg-brand-primary-active'
+                }`}
+              >
+                {notifsActive ? t('Activas') : t('Activar')}
+              </button>
+            </div>
+
+            <div className="space-y-1.5 text-[11px] text-brand-text-muted pt-1 border-t border-brand-border/40">
+              <p className="flex items-center space-x-1.5 text-white/80 font-medium">
+                <span className="text-brand-primary font-bold">•</span>
+                <span><b>14:00</b> — Recordatorio de mitad de jornada</span>
+              </p>
+              <p className="flex items-center space-x-1.5 text-white/80 font-medium">
+                <span className="text-amber-400 font-bold">•</span>
+                <span><b>17:30</b> — Alerta de peligro de racha y cero excusas</span>
+              </p>
+              <p className="flex items-center space-x-1.5 text-white/80 font-medium">
+                <span className="text-purple-400 font-bold">•</span>
+                <span><b>En vivo</b> — Alertas cuando tu compañero complete su pacto</span>
+              </p>
+            </div>
+
+            {notifsActive && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={handleSendTest}
+                  disabled={testSent}
+                  className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white text-xs font-semibold flex items-center justify-center space-x-2 transition-all cursor-pointer active:scale-98"
+                >
+                  {testSent ? (
+                    <>
+                      <Check size={14} className="text-emerald-400 stroke-[3]" />
+                      <span className="text-emerald-400">¡Notificación enviada!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send size={13} />
+                      <span>Enviar aviso de prueba ahora</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

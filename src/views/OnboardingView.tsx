@@ -1,15 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Flame, BookOpen, Dumbbell, Salad, Sunrise, 
   Sparkles, ArrowRight, CheckCircle2, ChevronRight, ChevronLeft,
-  Trophy, Handshake
+  Trophy, Handshake, Bell, BellRing, Shield, Swords, Clock, Check
 } from 'lucide-react';
 import { User } from '../types';
 import { PRESET_AVATARS } from '../utils/profileCustomization';
 import { updateUserProfile } from '../services/db';
+import { requestNotificationPermission, areNotificationsEnabled, isNotificationSupported } from '../services/notificationService';
 
-export const ONBOARDING_VERSION = 'v2_copy_updated';
+export const ONBOARDING_VERSION = 'v3_notifications_added';
 
 interface OnboardingViewProps {
   user: User;
@@ -18,11 +19,13 @@ interface OnboardingViewProps {
 
 export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete }) => {
   const { t } = useTranslation();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [selectedAvatarUrl, setSelectedAvatarUrl] = useState<string>(
     user.avatar_url || PRESET_AVATARS[1].url
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [notifGranted, setNotifGranted] = useState(() => areNotificationsEnabled());
+  const [isRequestingNotif, setIsRequestingNotif] = useState(false);
 
   // Swipe gesture handling
   const touchStartX = useRef<number | null>(null);
@@ -42,15 +45,27 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
 
-    if (isLeftSwipe && step < 3) {
-      setStep((prev) => (prev + 1) as 2 | 3);
+    if (isLeftSwipe && step < 4) {
+      setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4);
     }
     if (isRightSwipe && step > 1) {
-      setStep((prev) => (prev - 1) as 1 | 2);
+      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4);
     }
 
     touchStartX.current = null;
     touchEndX.current = null;
+  };
+
+  const handleEnableNotifications = async () => {
+    setIsRequestingNotif(true);
+    const granted = await requestNotificationPermission();
+    setNotifGranted(granted);
+    setIsRequestingNotif(false);
+    if (granted) {
+      setTimeout(() => {
+        setStep(4);
+      }, 700);
+    }
   };
 
   const handleFinish = async () => {
@@ -91,7 +106,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
       <div className="relative z-10 w-full flex items-center justify-between pt-1">
         {step > 1 ? (
           <button 
-            onClick={() => setStep((prev) => (prev - 1) as 1 | 2)}
+            onClick={() => setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4)}
             className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all text-white/60 cursor-pointer"
           >
             <ChevronLeft size={18} />
@@ -206,8 +221,86 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
           </div>
         )}
 
-        {/* STEP 3: Selector de Avatar / Aura Inicial */}
+        {/* STEP 3: Blindaje de Disciplina • Notificaciones */}
         {step === 3 && (
+          <div className="space-y-4 animate-fade-in max-w-xs mx-auto w-full text-center">
+            <div className="space-y-1.5">
+              <div className="w-14 h-14 rounded-3xl bg-brand-primary/10 border border-brand-primary/25 mx-auto flex items-center justify-center text-brand-primary shadow-[0_0_25px_rgba(122,141,255,0.2)]">
+                <BellRing size={26} className="animate-pulse" />
+              </div>
+              <h2 className="text-2xl font-display font-black tracking-tight text-white pt-1">
+                Blindaje de Racha
+              </h2>
+              <p className="text-xs text-white/50 leading-relaxed max-w-[260px] mx-auto">
+                La constancia no se deja al azar. Recibe avisos estratégicos en tu hora local para no fallar jamás.
+              </p>
+            </div>
+
+            {/* Strategic Notification Highlights */}
+            <div className="space-y-2 text-left pt-1">
+              <div className="p-3 rounded-2xl bg-[#0F0F12]/90 border border-white/10 flex items-center space-x-3 backdrop-blur-sm">
+                <div className="w-8 h-8 rounded-xl bg-brand-primary/15 text-brand-primary flex items-center justify-center shrink-0">
+                  <Clock size={15} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-white">Mitad de Jornada (~14:00)</p>
+                  <p className="text-[10px] text-white/40 leading-tight">Reconecta con tus 4 hábitos base.</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-[#0F0F12]/90 border border-white/10 flex items-center space-x-3 backdrop-blur-sm">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
+                  <Shield size={15} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-white">Alerta de Racha (~17:30)</p>
+                  <p className="text-[10px] text-white/40 leading-tight">Cero excusas antes del anochecer.</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-[#0F0F12]/90 border border-white/10 flex items-center space-x-3 backdrop-blur-sm">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center shrink-0">
+                  <Swords size={15} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-white">Alertas de Pactos en Vivo</p>
+                  <p className="text-[10px] text-white/40 leading-tight">Cuando tu compañero cumpla su parte.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Activation CTA */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleEnableNotifications}
+                disabled={isRequestingNotif || notifGranted}
+                className={`w-full py-3 rounded-2xl font-bold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer ${
+                  notifGranted 
+                    ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                    : 'bg-brand-primary hover:bg-brand-primary-active text-black shadow-[0_0_20px_rgba(122,141,255,0.3)] active:scale-95'
+                }`}
+              >
+                {isRequestingNotif ? (
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : notifGranted ? (
+                  <>
+                    <Check size={16} className="stroke-[3]" />
+                    <span>Avisos de Disciplina Activados</span>
+                  </>
+                ) : (
+                  <>
+                    <Bell size={15} />
+                    <span>Activar Avisos de Disciplina</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: Selector de Avatar / Aura Inicial */}
+        {step === 4 && (
           <div className="space-y-5 text-center animate-fade-in max-w-xs mx-auto w-full">
             <div className="space-y-1">
               <h2 className="text-2xl font-display font-black tracking-tight text-white">
@@ -272,11 +365,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
         
         {/* Centered Step Indicator Dots */}
         <div className="flex items-center space-x-2">
-          {[1, 2, 3].map((s) => (
+          {[1, 2, 3, 4].map((s) => (
             <button
               key={s}
               type="button"
-              onClick={() => setStep(s as 1 | 2 | 3)}
+              onClick={() => setStep(s as 1 | 2 | 3 | 4)}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 s === step ? 'w-6 bg-brand-primary shadow-[0_0_8px_#7A8DFF]' : 'w-1.5 bg-white/20 hover:bg-white/40'
               }`}
@@ -285,13 +378,13 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
         </div>
 
         {/* Minimal Bottom Action / Subtle Continue */}
-        {step < 3 ? (
+        {step < 4 ? (
           <button
             type="button"
-            onClick={() => setStep((prev) => (prev + 1) as 2 | 3)}
+            onClick={() => setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4)}
             className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95 text-xs font-semibold text-white/70 hover:text-white transition-all cursor-pointer"
           >
-            <span>Desliza o pulsa aquí</span>
+            <span>{step === 3 && notifGranted ? 'Siguiente paso' : 'Desliza o pulsa aquí'}</span>
             <ChevronRight size={14} className="text-white/50" />
           </button>
         ) : (

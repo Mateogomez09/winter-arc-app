@@ -13,6 +13,7 @@ import { PublicProfileModal } from './components/PublicProfileModal';
 import { initializeDB, getAllUsers, getLocalDateString, runDailyMaintenance } from './services/db';
 import { pullAllFromSupabase, setupRealtimeSync } from './services/supabaseSync';
 import { getCurrentAuthUser } from './services/auth';
+import { initNotificationScheduler, setupRealtimeNotifications } from './services/notificationService';
 import { supabase } from './lib/supabaseClient';
 import { User } from './types';
 
@@ -116,6 +117,21 @@ function App() {
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [currentDay]);
+
+  // 5. Strategic Notifications Scheduler & Realtime Alerts
+  useEffect(() => {
+    const cleanupScheduler = initNotificationScheduler();
+    let cleanupRealtime = () => {};
+
+    if (currentUser?.id) {
+      cleanupRealtime = setupRealtimeNotifications(currentUser.id);
+    }
+
+    return () => {
+      cleanupScheduler();
+      cleanupRealtime();
+    };
+  }, [currentUser?.id]);
 
   // Sync scroll position with activeTab
   useEffect(() => {
