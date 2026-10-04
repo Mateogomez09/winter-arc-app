@@ -98,21 +98,18 @@ export async function signUpUser(
 
     // 1. Upsert public user profile into Supabase
     try {
-      await supabase.from('users').upsert([{
+      const { error: userErr } = await supabase.from('users').upsert([{
         id: newUserProfile.id,
         name: newUserProfile.name,
         username: newUserProfile.username,
-        email: newUserProfile.email,
         avatar_url: newUserProfile.avatar_url,
-        avatar_frame: newUserProfile.avatar_frame,
-        name_color: newUserProfile.name_color,
-        title: newUserProfile.title,
-        bio: newUserProfile.bio,
-        xp: newUserProfile.xp,
         level: newUserProfile.level,
-        coins: newUserProfile.coins,
+        xp: newUserProfile.xp,
         created_at: newUserProfile.created_at
       }]);
+      if (userErr) {
+        console.warn('Note: Could not immediately upsert user row in Supabase:', userErr.message);
+      }
     } catch (dbErr) {
       console.warn('Note: Could not immediately upsert user row in Supabase:', dbErr);
     }
