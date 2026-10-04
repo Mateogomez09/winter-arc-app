@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { User } from '../types';
 import { createPortal } from 'react-dom';
-import { ONBOARDING_VERSION } from './OnboardingView';
 import { getUserTimezone } from '../services/db';
 import { 
   areNotificationsEnabled, 
@@ -296,30 +295,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-brand-text-muted mb-2 px-1">
             {t('Información')}
           </h2>
-          <div className="bg-brand-card border border-brand-border rounded-2xl p-4 shadow-sm space-y-2 text-xs">
+          <div className="bg-brand-card border border-brand-border rounded-2xl p-4 shadow-sm space-y-2.5 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-brand-text-muted">{t('Versión de la app')}</span>
               <span className="font-bold text-brand-text">v1.0.0 (Winter Arc 2026)</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-brand-text-muted">{t('Contacto y Soporte')}</span>
-              <a href="mailto:reto-winterarc@dazed.es" className="font-semibold text-brand-primary hover:underline">
-                reto-winterarc@dazed.es
+              <a href="mailto:retowinterarc@dazed.es" className="font-semibold text-brand-primary hover:underline">
+                retowinterarc@dazed.es
               </a>
-            </div>
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  localStorage.removeItem(`winterarc_onboarding_${ONBOARDING_VERSION}_${user.id}`);
-                  localStorage.removeItem(`winterarc_onboarding_completed_${user.id}`);
-                  window.location.reload();
-                }}
-                className="w-full py-2.5 px-3 rounded-xl bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary text-xs font-bold flex items-center justify-center space-x-2 transition-colors cursor-pointer"
-              >
-                <Sparkles size={14} />
-                <span>{t('Ver Tutorial de Bienvenida')}</span>
-              </button>
             </div>
           </div>
         </div>
@@ -393,7 +378,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </p>
                   <h3 className="font-bold text-brand-text text-sm pt-2">4. Tus derechos (ARCO)</h3>
                   <p>
-                    Tienes derecho a acceder, rectificar, exportar o eliminar totalmente tus datos en cualquier momento desde el botón "Eliminar Cuenta y Datos" en los Ajustes o escribiéndonos a <strong>reto-winterarc@dazed.es</strong>.
+                    Tienes derecho a acceder, rectificar, exportar o eliminar totalmente tus datos en cualquier momento desde el botón "Eliminar Cuenta y Datos" en los Ajustes o escribiéndonos a <strong>retowinterarc@dazed.es</strong>.
                   </p>
                 </>
               )}
