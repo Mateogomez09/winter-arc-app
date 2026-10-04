@@ -95,13 +95,15 @@ export const RankingView: React.FC<RankingViewProps> = ({ user, onUserClick }) =
   }, [user.id, user.xp, user.level]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      const end = new Date(new Date().getFullYear(), 11, 20); // 20th of December
+    const updateCountdown = () => {
       const now = new Date();
+      const currentYear = now.getFullYear();
+      // Target: 23rd of December (Month 11 in 0-indexed JS Date)
+      let end = new Date(currentYear, 11, 23, 23, 59, 59);
       if (now > end) {
-        end.setFullYear(end.getFullYear() + 1);
+        end = new Date(currentYear + 1, 11, 23, 23, 59, 59);
       }
-      const diff = end.getTime() - now.getTime();
+      const diff = Math.max(0, end.getTime() - now.getTime());
       
       const d = Math.floor(diff / (1000 * 60 * 60 * 24));
       const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
@@ -109,7 +111,10 @@ export const RankingView: React.FC<RankingViewProps> = ({ user, onUserClick }) =
       const s = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
       
       setTimeLeft(`${d}d ${h}h ${m}m ${s}s`);
-    }, 1000);
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
     return () => clearInterval(timer);
   }, []);
 
