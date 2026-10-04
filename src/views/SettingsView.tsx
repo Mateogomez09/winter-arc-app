@@ -303,7 +303,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-brand-text-muted">{t('Contacto y Soporte')}</span>
-              <span className="font-semibold text-brand-primary">soporte@winterarc.app</span>
+              <a href="mailto:reto-winterarc@dazed.es" className="font-semibold text-brand-primary hover:underline">
+                reto-winterarc@dazed.es
+              </a>
             </div>
             <div className="pt-2">
               <button
@@ -391,7 +393,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </p>
                   <h3 className="font-bold text-brand-text text-sm pt-2">4. Tus derechos (ARCO)</h3>
                   <p>
-                    Tienes derecho a acceder, rectificar, exportar o eliminar totalmente tus datos en cualquier momento desde el botón "Eliminar Cuenta y Datos" en los Ajustes o escribiéndonos a <strong>soporte@winterarc.app</strong>.
+                    Tienes derecho a acceder, rectificar, exportar o eliminar totalmente tus datos en cualquier momento desde el botón "Eliminar Cuenta y Datos" en los Ajustes o escribiéndonos a <strong>reto-winterarc@dazed.es</strong>.
                   </p>
                 </>
               )}
