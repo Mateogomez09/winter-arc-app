@@ -36,17 +36,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [activePolicy, setActivePolicy] = useState<PolicyType>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDisableNotifConfirm, setShowDisableNotifConfirm] = useState(false);
   const [notifsActive, setNotifsActive] = useState(() => areNotificationsEnabled());
   const [testSent, setTestSent] = useState(false);
 
   const handleToggleNotifs = async () => {
     if (notifsActive) {
-      disableNotifications();
-      setNotifsActive(false);
+      setShowDisableNotifConfirm(true);
     } else {
       const granted = await requestNotificationPermission();
       setNotifsActive(granted);
     }
+  };
+
+  const handleConfirmDisableNotifs = () => {
+    disableNotifications();
+    setNotifsActive(false);
+    setShowDisableNotifConfirm(false);
   };
 
   const handleSendTest = async () => {
@@ -163,19 +169,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </button>
             </div>
 
-            <div className="space-y-1.5 text-[11px] text-brand-text-muted pt-1 border-t border-brand-border/40">
-              <p className="flex items-center space-x-1.5 text-white/80 font-medium">
-                <span className="text-brand-primary font-bold">•</span>
-                <span><b>14:00</b> — Recordatorio de mitad de jornada</span>
-              </p>
-              <p className="flex items-center space-x-1.5 text-white/80 font-medium">
-                <span className="text-amber-400 font-bold">•</span>
-                <span><b>17:30</b> — Alerta de peligro de racha y cero excusas</span>
-              </p>
-              <p className="flex items-center space-x-1.5 text-white/80 font-medium">
-                <span className="text-purple-400 font-bold">•</span>
-                <span><b>En vivo</b> — Alertas cuando tu compañero complete su pacto</span>
-              </p>
+            <div className="space-y-2 text-[11px] pt-2 border-t border-brand-border/40">
+              <div className="flex items-center space-x-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-primary flex-shrink-0" />
+                <span className="text-brand-text">
+                  <strong className="font-bold text-brand-text">14:00</strong> <span className="text-brand-text-muted">— {t('Recordatorio de mitad de jornada')}</span>
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                <span className="text-brand-text">
+                  <strong className="font-bold text-brand-text">17:30</strong> <span className="text-brand-text-muted">— {t('Alerta de peligro de racha y cero excusas')}</span>
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0" />
+                <span className="text-brand-text">
+                  <strong className="font-bold text-brand-text">En vivo</strong> <span className="text-brand-text-muted">— {t('Alertas cuando tu compañero complete su pacto')}</span>
+                </span>
+              </div>
             </div>
 
             {notifsActive && (
@@ -184,17 +196,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   type="button"
                   onClick={handleSendTest}
                   disabled={testSent}
-                  className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white text-xs font-semibold flex items-center justify-center space-x-2 transition-all cursor-pointer active:scale-98"
+                  className="w-full py-2.5 rounded-xl bg-brand-card-sec hover:bg-brand-border/30 border border-brand-border text-brand-text text-xs font-semibold flex items-center justify-center space-x-2 transition-all cursor-pointer active:scale-98 shadow-sm"
                 >
                   {testSent ? (
                     <>
-                      <Check size={14} className="text-emerald-400 stroke-[3]" />
-                      <span className="text-emerald-400">¡Notificación enviada!</span>
+                      <Check size={14} className="text-emerald-500 stroke-[3]" />
+                      <span className="text-emerald-500 font-bold">{t('¡Notificación enviada!')}</span>
                     </>
                   ) : (
                     <>
-                      <Send size={13} />
-                      <span>Enviar aviso de prueba ahora</span>
+                      <Send size={13} className="text-brand-primary" />
+                      <span>{t('Enviar aviso de prueba ahora')}</span>
                     </>
                   )}
                 </button>
@@ -506,6 +518,36 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 className="w-full py-2.5 bg-brand-card hover:bg-brand-card-sec border border-brand-border text-brand-text text-xs font-bold rounded-xl transition-all"
               >
                 {t('Cancelar')}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Disable Notifications Friction Confirmation Modal */}
+      {showDisableNotifConfirm && createPortal(
+        <div className="fixed inset-0 bg-brand-bg/80 z-[300] flex items-center justify-center p-4 animate-overlay-fade-in backdrop-blur-md">
+          <div className="w-full max-w-xs bg-brand-modal border border-amber-500/30 rounded-3xl p-6 shadow-2xl text-center">
+            <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle size={26} />
+            </div>
+            <h3 className="text-base font-bold text-brand-text mb-1.5">{t('¿Desactivar avisos?')}</h3>
+            <p className="text-xs text-brand-text-muted leading-relaxed mb-5">
+              {t('Desactivar los avisos aumenta el riesgo de olvidar tus hábitos y romper tu racha de 90 días en el Winter Arc. Dejarás de recibir los recordatorios de las 14:00 y las alertas de peligro de las 17:30.')}
+            </p>
+            <div className="flex flex-col space-y-2">
+              <button 
+                onClick={() => setShowDisableNotifConfirm(false)}
+                className="w-full py-3 bg-brand-primary text-black text-xs font-bold rounded-xl hover:bg-brand-primary-active transition-all shadow-md cursor-pointer"
+              >
+                {t('Mantener Activas (Recomendado)')}
+              </button>
+              <button 
+                onClick={handleConfirmDisableNotifs}
+                className="w-full py-2.5 bg-brand-card hover:bg-brand-card-sec border border-brand-border text-brand-text-muted hover:text-brand-red text-xs font-medium rounded-xl transition-all cursor-pointer"
+              >
+                {t('Desactivar de todos modos')}
               </button>
             </div>
           </div>
