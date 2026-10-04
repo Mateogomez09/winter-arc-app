@@ -37,16 +37,17 @@ const KEYS = {
   CURRENT_USER: 'metis_current_user'
 };
 
-// Timezone-safe date helpers
+// Timezone-safe date helpers (Strictly calibrated to the user's local device timezone)
 export function getLocalDateString(date: Date = new Date()): string {
-  const tzOffset = date.getTimezoneOffset() * 60000;
-  const localTime = new Date(date.getTime() - tzOffset);
-  return localTime.toISOString().split('T')[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 export function parseLocalDate(dateStr: string): Date {
   const [year, month, day] = dateStr.split('-').map(Number);
-  return new Date(year, month - 1, day);
+  return new Date(year, month - 1, day, 12, 0, 0); // Noon prevents DST timezone jumps
 }
 
 export function getDayBeforeDateString(dateStr: string): string {
@@ -55,10 +56,18 @@ export function getDayBeforeDateString(dateStr: string): string {
   return getLocalDateString(date);
 }
 
-export function getFutureLocalDateString(daysAhead: number): string {
-  const date = new Date();
+export function getFutureLocalDateString(daysAhead: number, fromDateStr?: string): string {
+  const date = fromDateStr ? parseLocalDate(fromDateStr) : new Date();
   date.setDate(date.getDate() + daysAhead);
   return getLocalDateString(date);
+}
+
+export function getUserTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch (e) {
+    return 'UTC';
+  }
 }
 
 export function calculateStreak(habitId: string, completions: HabitCompletion[], targetDateStr: string, habit?: Habit, userId?: string): number {
@@ -4005,6 +4014,8 @@ export async function cancelPact(pactId: string): Promise<void> {
 
 export async function getPartnerCompletionStatus(partnerId: string, habitName: string, dateStr: string): Promise<boolean> {
   const cleanName = habitName.trim().toLowerCase();
+  const yesterdayStr = getDayBeforeDateString(dateStr);
+  const tomorrowStr = getFutureLocalDateString(1, dateStr);
 
   // 1. Authoritative check in Supabase across devices
   try {
@@ -4021,14 +4032,14 @@ export async function getPartnerCompletionStatus(partnerId: string, habitName: s
       if (matchingHabitIds.length > 0) {
         const { data: compData, error: compErr } = await supabase
           .from('completions')
-          .select('id')
+          .select('id, date')
           .eq('user_id', partnerId)
-          .eq('date', dateStr)
+          .in('date', [dateStr, yesterdayStr, tomorrowStr])
           .eq('is_fully_completed', true)
           .in('habit_id', matchingHabitIds);
 
-        if (!compErr) {
-          return Array.isArray(compData) && compData.length > 0;
+        if (!compErr && Array.isArray(compData)) {
+          return compData.some(c => c.date === dateStr || c.date === yesterdayStr);
         }
       } else {
         // Partner has habits in Supabase but none matching this name
@@ -4049,7 +4060,7 @@ export async function getPartnerCompletionStatus(partnerId: string, habitName: s
     if (partnerHabitIds.size > 0) {
       return completions.some(c => 
         c.user_id === partnerId && 
-        c.date === dateStr && 
+        (c.date === dateStr || c.date === yesterdayStr) && 
         c.is_fully_completed !== false &&
         partnerHabitIds.has(c.habit_id)
       );

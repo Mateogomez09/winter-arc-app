@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 import { 
   ArrowLeft, Shield, FileText, Lock, HeartHandshake, 
   HelpCircle, LogOut, Trash2, AlertTriangle, X, 
-  ChevronRight, CheckCircle2, User as UserIcon, Mail, Sparkles 
+  ChevronRight, CheckCircle2, User as UserIcon, Mail, Sparkles, Globe, Clock 
 } from 'lucide-react';
 import { User } from '../types';
 import { createPortal } from 'react-dom';
 import { ONBOARDING_VERSION } from './OnboardingView';
+import { getUserTimezone } from '../services/db';
 
 interface SettingsViewProps {
   user: User;
@@ -72,6 +73,32 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Timezone & Day Rollover Section */}
+        <div>
+          <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-brand-text-muted mb-2 px-1">
+            {t('Zona Horaria y Cambio de Día')}
+          </h2>
+          <div className="bg-brand-card border border-brand-border rounded-2xl p-4 shadow-sm space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+                  <Globe size={16} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-brand-text">{t('Zona horaria activa')}</p>
+                  <p className="text-[10px] text-brand-text-muted">{getUserTimezone()}</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                00:00 Local
+              </span>
+            </div>
+            <p className="text-[11px] text-brand-text-muted leading-relaxed pt-1.5 border-t border-brand-border/40">
+              {t('Tus hábitos, tareas y rachas se reinician automáticamente a las 00:00 (medianoche) de tu país o ciudad. Si viajas o utilizas la app en México, España o cualquier lugar del mundo, el progreso se adapta con precisión a tu huso horario local.')}
+            </p>
           </div>
         </div>
 

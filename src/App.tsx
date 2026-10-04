@@ -10,7 +10,7 @@ import { RankingView } from './views/RankingView';
 import { StatsView } from './views/StatsView';
 import { PerfilView } from './views/PerfilView';
 import { PublicProfileModal } from './components/PublicProfileModal';
-import { initializeDB, getAllUsers } from './services/db';
+import { initializeDB, getAllUsers, getLocalDateString, runDailyMaintenance } from './services/db';
 import { pullAllFromSupabase, setupRealtimeSync } from './services/supabaseSync';
 import { getCurrentAuthUser } from './services/auth';
 import { supabase } from './lib/supabaseClient';
@@ -19,6 +19,7 @@ import { User } from './types';
 function App() {
   const [authChecking, setAuthChecking] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentDay, setCurrentDay] = useState(() => getLocalDateString());
   
   const [activeTab, setActiveTab] = useState<TabType>('habitos');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -77,6 +78,44 @@ function App() {
     });
     return () => unsubscribe();
   }, [currentUser]);
+
+  // 4. Timezone-safe local midnight rollover detection
+  useEffect(() => {
+    let midnightTimer: any;
+
+    const scheduleMidnightCheck = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+      const msUntilMidnight = Math.max(1000, nextMidnight.getTime() - now.getTime());
+
+      midnightTimer = setTimeout(() => {
+        const newToday = getLocalDateString();
+        setCurrentDay(newToday);
+        runDailyMaintenance();
+        scheduleMidnightCheck();
+      }, msUntilMidnight);
+    };
+
+    scheduleMidnightCheck();
+
+    // Check on visibility/focus when device wakes up in local timezone
+    const onVisibilityChange = () => {
+      const actualToday = getLocalDateString();
+      if (actualToday !== currentDay) {
+        setCurrentDay(actualToday);
+        runDailyMaintenance();
+      }
+    };
+
+    window.addEventListener('focus', onVisibilityChange);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      clearTimeout(midnightTimer);
+      window.removeEventListener('focus', onVisibilityChange);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [currentDay]);
 
   // Sync scroll position with activeTab
   useEffect(() => {
@@ -172,6 +211,7 @@ function App() {
   return (
     <PhoneContainer>
       <div 
+        key={currentDay}
         ref={scrollContainerRef}
         className="flex-1 min-h-0 w-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar"
         style={{ scrollBehavior: 'smooth' }}
