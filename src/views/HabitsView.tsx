@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from "react-i18next";
-import { Plus, Edit2, Shield, X, Handshake, Flame, Circle, CheckCircle2 } from 'lucide-react';
+import { 
+  Plus, Edit2, Shield, X, Handshake, Flame, Circle, CheckCircle2,
+  Droplets, BookOpen, PenLine, Sparkles, ShieldAlert, Footprints, Sun, HeartPulse 
+} from 'lucide-react';
 import { User, Habit } from '../types';
 import { getHabits, completeHabit, uncompleteHabit, createHabit, updateHabit, getPacts, getPartnerCompletionStatus, refreshPactsFromSupabase, getLocalDateString } from '../services/db';
 import { supabase } from '../lib/supabaseClient';
@@ -14,6 +17,64 @@ interface HabitsViewProps {
 
 const DEFAULT_HABITS = ['Ejercicio físico 1 hora', 'Buena rutina de sueño', '30 mins aprendiendo algo'];
 const LEGACY_DEFAULT_HABITS = ['Leer 10 páginas', 'Entrenar', 'Comer saludable', 'Levantarse pronto'];
+
+interface HabitSuggestion {
+  name: string;
+  icon: any;
+  color: string;
+  desc: string;
+}
+
+const SUGGESTED_HABITS: HabitSuggestion[] = [
+  {
+    name: 'Beber 2.5L de agua',
+    icon: Droplets,
+    color: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    desc: 'Hidratación constante (edita la cantidad a tu gusto)'
+  },
+  {
+    name: 'Leer mínimo 10 páginas',
+    icon: BookOpen,
+    color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+    desc: 'Lectura enfocada y nutrición mental'
+  },
+  {
+    name: 'Escribir antes de dormir',
+    icon: PenLine,
+    color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+    desc: 'Journaling, balance del día y claridad mental'
+  },
+  {
+    name: 'Ducha de agua fría',
+    icon: Sparkles,
+    color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+    desc: 'Disciplina de choque y resiliencia matutina'
+  },
+  {
+    name: '0 alcohol y 0 comida basura',
+    icon: ShieldAlert,
+    color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+    desc: 'Nutrición limpia y control estricto de impulsos'
+  },
+  {
+    name: 'Caminar 10.000 pasos',
+    icon: Footprints,
+    color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    desc: 'Movimiento activo y oxigenación diaria'
+  },
+  {
+    name: 'Planificar el día siguiente',
+    icon: Sun,
+    color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    desc: 'Organización la noche anterior antes de dormir'
+  },
+  {
+    name: '10 min meditación o respiración',
+    icon: HeartPulse,
+    color: 'text-teal-400 bg-teal-500/10 border-teal-500/20',
+    desc: 'Calma, presencia y reducción del estrés'
+  }
+];
 
 export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
   const { t } = useTranslation();
@@ -383,25 +444,126 @@ export const HabitsView: React.FC<HabitsViewProps> = ({ user }) => {
       )}
 
       {showAddModal && createPortal(
-        <div className="fixed inset-0 bg-brand-bg/70 z-[300] flex items-center justify-center p-4 animate-overlay-fade-in backdrop-blur-sm" onClick={() => setShowAddModal(false)}>
-          <div className="w-full max-w-sm bg-brand-modal border border-brand-border rounded-3xl p-6 shadow-2xl relative" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-brand-text">{t('Hábito Personalizado')}</h2>
-              <button type="button" onClick={() => setShowAddModal(false)} className="text-brand-text-muted hover:text-brand-text p-1 cursor-pointer"><X size={20}/></button>
-            </div>
-            <form onSubmit={handleAddCustomHabit}>
-              <input 
-                autoFocus
-                type="text" 
-                placeholder={t('Ej: Escribir en diario')}
-                className="w-full bg-brand-bg border border-brand-border text-brand-text rounded-xl px-4 py-3 text-sm mb-4 focus:outline-none focus:border-brand-primary"
-                value={newHabitName}
-                onChange={e => setNewHabitName(e.target.value)}
-              />
-              <button type="submit" disabled={!newHabitName.trim()} className="w-full py-3.5 bg-brand-primary text-white rounded-xl font-bold disabled:opacity-50 transition-colors cursor-pointer shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.3)]">
-                {t('Añadir Hábito')}
+        <div className="fixed inset-0 bg-brand-bg/80 z-[300] flex items-center justify-center p-4 animate-overlay-fade-in backdrop-blur-md" onClick={() => setShowAddModal(false)}>
+          <div className="w-full max-w-md max-h-[90vh] bg-brand-modal border border-brand-border rounded-3xl p-5 sm:p-6 shadow-2xl relative flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center pb-3 border-b border-brand-border/50 flex-shrink-0">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-brand-text flex items-center space-x-2">
+                  <Sparkles size={18} className="text-brand-primary" />
+                  <span>{t('Añadir Hábito Personal')}</span>
+                </h2>
+                <p className="text-[11px] text-brand-text-muted mt-0.5">
+                  {t('Elige una sugerencia o escribe tu propio objetivo a medida')}
+                </p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowAddModal(false)} 
+                className="p-1.5 rounded-full bg-brand-card hover:bg-brand-card-sec text-brand-text-muted hover:text-brand-text transition-colors cursor-pointer"
+              >
+                <X size={18} />
               </button>
-            </form>
+            </div>
+
+            {/* Scrollable Form & Suggestions */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1 hide-scrollbar">
+              
+              {/* Custom Input */}
+              <form onSubmit={handleAddCustomHabit} id="add-habit-form" className="space-y-2">
+                <label className="text-[11px] font-extrabold uppercase tracking-wider text-brand-text-muted px-1 block">
+                  {t('Nombre del hábito')}
+                </label>
+                <div className="relative">
+                  <input 
+                    autoFocus
+                    type="text" 
+                    placeholder={t('Ej: Beber 3L de agua, Estudiar 1h...')}
+                    className="w-full bg-brand-bg border border-brand-border focus:border-brand-primary text-brand-text rounded-2xl px-4 py-3.5 text-sm focus:outline-none transition-all pr-9 shadow-inner"
+                    value={newHabitName}
+                    onChange={e => setNewHabitName(e.target.value)}
+                  />
+                  {newHabitName && (
+                    <button 
+                      type="button" 
+                      onClick={() => setNewHabitName('')} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-text-muted hover:text-brand-text p-1 cursor-pointer"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                <p className="text-[10px] text-brand-text-muted px-1">
+                  {t('💡 Puedes tocar una sugerencia inferior para autocompletar y ajustar tus propios números (litros, páginas, etc.).')}
+                </p>
+              </form>
+
+              {/* Suggestions Section */}
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand-text-muted">
+                    {t('Sugerencias Populares')}
+                  </span>
+                  <span className="text-[10px] text-brand-primary font-bold">
+                    {SUGGESTED_HABITS.length} ideas
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {SUGGESTED_HABITS.map((sug, idx) => {
+                    const IconComponent = sug.icon;
+                    const isSelected = newHabitName.trim().toLowerCase() === sug.name.toLowerCase();
+
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => setNewHabitName(sug.name)}
+                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center space-x-3 active:scale-[0.99] ${
+                          isSelected
+                            ? 'bg-brand-primary/15 border-brand-primary shadow-[0_0_15px_rgba(122,141,255,0.2)]'
+                            : 'bg-brand-card hover:bg-brand-card-sec border-brand-border'
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border ${sug.color}`}>
+                          <IconComponent size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-bold truncate ${isSelected ? 'text-brand-primary' : 'text-brand-text'}`}>
+                            {sug.name}
+                          </p>
+                          <p className="text-[10px] text-brand-text-muted truncate mt-0.5">
+                            {sug.desc}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0 pl-1">
+                          {isSelected ? (
+                            <CheckCircle2 size={16} className="text-brand-primary" />
+                          ) : (
+                            <Plus size={16} className="text-brand-text-muted hover:text-brand-text" />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Modal CTA */}
+            <div className="pt-3 border-t border-brand-border/50 flex-shrink-0">
+              <button 
+                type="submit" 
+                form="add-habit-form"
+                disabled={!newHabitName.trim()} 
+                className="w-full py-3.5 bg-brand-primary text-black rounded-2xl font-bold text-xs uppercase tracking-wider disabled:opacity-40 transition-all cursor-pointer shadow-[0_0_15px_rgba(122,141,255,0.3)] hover:bg-brand-primary-active active:scale-[0.98] flex items-center justify-center space-x-2"
+              >
+                <Plus size={16} className="stroke-[3]" />
+                <span>{t('Añadir a mi Winter Arc')}</span>
+              </button>
+            </div>
+
           </div>
         </div>,
         document.body
