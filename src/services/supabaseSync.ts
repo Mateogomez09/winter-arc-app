@@ -35,22 +35,29 @@ export async function syncTableToSupabase(key: string, localItems: any[]) {
   if (!table || !Array.isArray(localItems) || localItems.length === 0) return;
 
   try {
-    let itemsToSync = localItems;
+    const currentUserId = localStorage.getItem('metis_current_user_id');
+    if (!currentUserId) return; // Do not attempt to sync if not authenticated
+
+    let itemsToSync: any[] = [];
     if (table === 'users') {
-      const currentUserId = localStorage.getItem('metis_current_user_id');
-      if (currentUserId) {
-        itemsToSync = localItems.filter(u => u.id === currentUserId);
-      }
+      itemsToSync = localItems.filter(u => u && u.id === currentUserId);
+    } else if (table === 'habits' || table === 'completions' || table === 'value_posts' || table === 'value_likes' || table === 'value_comments') {
+      itemsToSync = localItems.filter(item => item && item.user_id === currentUserId);
+    } else {
+      itemsToSync = localItems;
     }
+
+    if (itemsToSync.length === 0) return;
+
     const sanitized = sanitizeItems(table, itemsToSync);
     if (sanitized.length > 0) {
       const { error: upsertError } = await supabase.from(table).upsert(sanitized);
       if (upsertError) {
-        console.error(`Error upserting ${table}:`, upsertError);
+        console.warn(`Sync warning for ${table}:`, upsertError.message);
       }
     }
   } catch (err) {
-    console.error(`Unexpected sync error for ${table}:`, err);
+    console.warn(`Unexpected sync error for ${table}:`, err);
   }
 }
 
