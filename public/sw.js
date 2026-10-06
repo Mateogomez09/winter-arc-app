@@ -1,4 +1,4 @@
-// Winter Arc - Service Worker for Web Push & Local Notifications
+// Winter Arc - Production Service Worker for Web Push & Offline Resilience
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -8,13 +8,14 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-// Handle incoming Web Push
+// Handle incoming server Web Push
 self.addEventListener('push', (event) => {
   let data = {
     title: 'WINTER ARC • Disciplina Absoluta ⚔️',
     body: 'Protege tu racha diaria y mantén el estándar.',
     icon: '/icon-192.png',
     badge: '/favicon.png',
+    tag: 'winterarc-discipline',
     data: { url: '/' }
   };
 
@@ -27,16 +28,18 @@ self.addEventListener('push', (event) => {
     }
   }
 
+  const notificationOptions = {
+    body: data.body,
+    icon: data.icon || '/icon-192.png',
+    badge: data.badge || '/favicon.png',
+    tag: data.tag || 'winterarc-discipline',
+    renotify: true,
+    vibrate: [200, 100, 200],
+    data: data.data || { url: '/' }
+  };
+
   event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: data.icon || '/icon-192.png',
-      badge: data.badge || '/favicon.png',
-      vibrate: [200, 100, 200],
-      tag: data.tag || 'winterarc-notification',
-      renotify: true,
-      data: data.data || { url: '/' }
-    })
+    self.registration.showNotification(data.title, notificationOptions)
   );
 });
 
@@ -49,6 +52,9 @@ self.addEventListener('notificationclick', (event) => {
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
         if (client.url && 'focus' in client) {
+          if ('navigate' in client && targetUrl !== '/') {
+            client.navigate(targetUrl);
+          }
           return client.focus();
         }
       }

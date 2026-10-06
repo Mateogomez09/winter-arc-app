@@ -181,3 +181,26 @@ BEGIN
   RETURN QUERY SELECT v_xp, v_level;
 END;
 $$;
+
+-- 10. Web Push Subscriptions for Native Background Notifications
+CREATE TABLE IF NOT EXISTS public.push_subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  endpoint TEXT NOT NULL UNIQUE,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  user_agent TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.push_subscriptions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can manage push subscriptions" ON public.push_subscriptions;
+CREATE POLICY "Public can manage push subscriptions"
+ON public.push_subscriptions
+FOR ALL
+USING (true)
+WITH CHECK (true);
+
+CREATE INDEX IF NOT EXISTS idx_push_subs_user_id ON public.push_subscriptions (user_id);

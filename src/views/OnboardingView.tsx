@@ -58,7 +58,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ user, onComplete
 
   const handleEnableNotifications = async () => {
     setIsRequestingNotif(true);
-    const granted = await requestNotificationPermission();
+    const granted = await requestNotificationPermission(user.id);
     setNotifGranted(granted);
     setIsRequestingNotif(false);
     if (granted) {

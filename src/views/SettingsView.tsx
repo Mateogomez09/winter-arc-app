@@ -13,7 +13,10 @@ import {
   requestNotificationPermission, 
   disableNotifications, 
   sendLocalNotification, 
-  isNotificationSupported 
+  sendServerTestNotification,
+  isNotificationSupported,
+  isIOSDevice,
+  isStandalonePWA
 } from '../services/notificationService';
 
 interface SettingsViewProps {
@@ -39,11 +42,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [notifsActive, setNotifsActive] = useState(() => areNotificationsEnabled());
   const [testSent, setTestSent] = useState(false);
 
+  const isIOS = isIOSDevice();
+  const isStandalone = isStandalonePWA();
+
   const handleToggleNotifs = async () => {
     if (notifsActive) {
       setShowDisableNotifConfirm(true);
     } else {
-      const granted = await requestNotificationPermission();
+      const granted = await requestNotificationPermission(user.id);
       setNotifsActive(granted);
     }
   };
@@ -56,11 +62,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const handleSendTest = async () => {
     setTestSent(true);
-    await sendLocalNotification({
-      title: 'WINTER ARC • Prueba de Notificación ⚔️',
-      body: 'Todo listo. El sistema de avisos de disciplina y pactos está activo.',
-      tag: 'test-notification'
-    });
+    await sendServerTestNotification();
     setTimeout(() => setTestSent(false), 2500);
   };
 
@@ -189,6 +191,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
             </div>
 
+            {isIOS && !isStandalone && (
+              <div className="p-3 bg-brand-primary/10 border border-brand-primary/20 rounded-xl flex items-start space-x-2.5">
+                <Sparkles size={14} className="text-brand-primary flex-shrink-0 mt-0.5" />
+                <p className="text-[11px] text-brand-text leading-tight">
+                  <strong className="font-bold text-brand-primary">Usuario de iPhone (iOS):</strong> Para recibir avisos con la pantalla apagada, pulsa <strong>Compartir (⎋)</strong> y elige <strong>«Añadir a pantalla de inicio»</strong>.
+                </p>
+              </div>
+            )}
+
             {notifsActive && (
               <div className="pt-1">
                 <button
@@ -200,7 +211,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   {testSent ? (
                     <>
                       <Check size={14} className="text-emerald-500 stroke-[3]" />
-                      <span className="text-emerald-500 font-bold">{t('¡Notificación enviada!')}</span>
+                      <span className="text-emerald-500 font-bold">{t('¡Aviso Push enviado al móvil!')}</span>
                     </>
                   ) : (
                     <>

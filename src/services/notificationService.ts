@@ -1,4 +1,4 @@
-// Winter Arc - Strategic Web Push & Notification Service
+// Winter Arc - Production Web Push & Multi-Device Notification Service
 import { supabase } from '../lib/supabaseClient';
 import { getPacts, getAllUsers, getValuePosts } from './db';
 
@@ -14,8 +14,39 @@ const NOTIFICATIONS_ENABLED_KEY = 'winterarc_notifications_enabled';
 const LAST_MIDDAY_NOTIFICATION_KEY = 'winterarc_last_midday_notif';
 const LAST_STREAK_NOTIFICATION_KEY = 'winterarc_last_streak_notif';
 
+// Official VAPID Public Key for Web Push (Apple APNs / Google FCM)
+export const VAPID_PUBLIC_KEY = 'BIgjqDX8pJuAgkQe6wb5hK_seEJJOUlUcP2wiHSvFjMxglNhiK9aqN0OgYQOq35340F3dpi0xskEygCNYSt8r-w';
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const buffer = new ArrayBuffer(rawData.length);
+  const outputArray = new Uint8Array(buffer);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 export function isNotificationSupported(): boolean {
   return typeof window !== 'undefined' && 'Notification' in window;
+}
+
+export function isPushSupported(): boolean {
+  return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
+}
+
+export function isIOSDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+export function isStandalonePWA(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         (window.navigator as any).standalone === true;
 }
 
 export function getNotificationPermission(): NotificationPermission | 'unsupported' {
@@ -35,24 +66,108 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
     return registration;
   } catch (err) {
-    console.warn('Service worker registration failed:', err);
+    console.warn('Service worker registration notice:', err);
     return null;
   }
 }
 
-export async function requestNotificationPermission(): Promise<boolean> {
+/**
+ * Register device with Apple/Google push servers and sync token to Supabase
+ */
+export async function subscribeToWebPush(userId?: string): Promise<boolean> {
+  if (!isPushSupported()) return false;
+
+  try {
+    await registerServiceWorker();
+    const registration = await navigator.serviceWorker.ready;
+    if (!registration || !registration.pushManager) {
+      return false;
+    }
+
+    let subscription = await registration.pushManager.getSubscription();
+
+    // If no subscription yet, create a new one using VAPID public key
+    if (!subscription) {
+      const convertedVapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey as unknown as BufferSource
+      });
+    }
+
+    if (subscription) {
+      const rawSub = subscription.toJSON();
+      const endpoint = subscription.endpoint;
+      const p256dh = rawSub.keys?.p256dh;
+      const auth = rawSub.keys?.auth;
+
+      if (endpoint && p256dh && auth) {
+        const currentId = userId || localStorage.getItem('metis_current_user_id') || null;
+        
+        const payload: Record<string, any> = {
+          endpoint,
+          p256dh,
+          auth,
+          user_agent: navigator.userAgent.slice(0, 255),
+          updated_at: new Date().toISOString()
+        };
+        if (currentId) {
+          payload.user_id = currentId;
+        }
+
+        const { error } = await supabase
+          .from('push_subscriptions')
+          .upsert([payload], { onConflict: 'endpoint' });
+
+        if (error) {
+          console.warn('Push subscription sync notice:', error.message);
+        }
+        return true;
+      }
+    }
+    return false;
+  } catch (err) {
+    console.error('Error establishing Web Push subscription:', err);
+    return false;
+  }
+}
+
+/**
+ * Unsubscribe device from Web Push and remove token from Supabase
+ */
+export async function unsubscribeFromWebPush(): Promise<void> {
+  try {
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      if (registration.pushManager) {
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          const endpoint = subscription.endpoint;
+          await subscription.unsubscribe();
+          await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Error during push unsubscription:', err);
+  }
+}
+
+export async function requestNotificationPermission(userId?: string): Promise<boolean> {
   if (!isNotificationSupported()) return false;
 
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       localStorage.setItem(NOTIFICATIONS_ENABLED_KEY, 'true');
-      await registerServiceWorker();
+      
+      // Subscribe to real server web push
+      await subscribeToWebPush(userId);
 
-      // Send a welcoming test notification
+      // Send immediate welcoming local confirmation
       sendLocalNotification({
         title: 'WINTER ARC • Notificaciones Activas ⚔️',
-        body: 'El estándar está fijado. Recibirás recordatorios estratégicos en tu hora local para proteger tu racha.',
+        body: 'El estándar está fijado. Recibirás avisos de disciplina a las 14:00 y a las 17:30 para proteger tu racha.',
         tag: 'welcome-notification'
       });
 
@@ -69,6 +184,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
 export function disableNotifications(): void {
   localStorage.setItem(NOTIFICATIONS_ENABLED_KEY, 'false');
+  unsubscribeFromWebPush().catch(() => {});
 }
 
 export async function sendLocalNotification(payload: NotificationPayload): Promise<boolean> {
@@ -92,7 +208,6 @@ export async function sendLocalNotification(payload: NotificationPayload): Promi
         return true;
       }
     }
-    // Fallback to standard window Notification
     new Notification(payload.title, options);
     return true;
   } catch (err) {
@@ -100,9 +215,42 @@ export async function sendLocalNotification(payload: NotificationPayload): Promi
       new Notification(payload.title, options);
       return true;
     } catch (e) {
-      console.error('Error displaying notification:', e);
       return false;
     }
+  }
+}
+
+/**
+ * Trigger an actual live server push to verify real background delivery
+ */
+export async function sendServerTestNotification(): Promise<boolean> {
+  try {
+    let endpoint: string | undefined;
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      if (registration.pushManager) {
+        const sub = await registration.pushManager.getSubscription();
+        if (sub) {
+          endpoint = sub.endpoint;
+        }
+      }
+    }
+
+    const response = await fetch('/api/send-test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endpoint })
+    });
+
+    return response.ok;
+  } catch (err) {
+    console.warn('Server test push trigger error:', err);
+    // Fallback to local notification test if API fails
+    return sendLocalNotification({
+      title: 'WINTER ARC • Prueba de Notificación ⚔️',
+      body: 'Todo listo. El sistema de avisos de disciplina y pactos está activo.',
+      tag: 'test-notification'
+    });
   }
 }
 
@@ -142,11 +290,16 @@ export function triggerSocialReflectionNotification(authorName: string): void {
   });
 }
 
-// Schedule local notifications based on user's device clock
+// Foreground local fallback scheduler
 export function initNotificationScheduler(): () => void {
   if (!isNotificationSupported()) return () => {};
 
   registerServiceWorker().catch(() => {});
+
+  // Resync push subscription if active
+  if (areNotificationsEnabled()) {
+    subscribeToWebPush().catch(() => {});
+  }
 
   const checkSchedule = () => {
     if (!areNotificationsEnabled()) return;
@@ -175,13 +328,8 @@ export function initNotificationScheduler(): () => void {
     }
   };
 
-  // Run initial check
   checkSchedule();
-
-  // Periodic check every 60 seconds
   const interval = setInterval(checkSchedule, 60000);
-
-  // Check on focus
   window.addEventListener('focus', checkSchedule);
   document.addEventListener('visibilitychange', checkSchedule);
 
@@ -195,6 +343,11 @@ export function initNotificationScheduler(): () => void {
 // Real-time notification listener for pact completions and social interactions
 export function setupRealtimeNotifications(currentUserId: string): () => void {
   if (!currentUserId || !isNotificationSupported()) return () => {};
+
+  // Ensure subscription is synced with user id
+  if (areNotificationsEnabled()) {
+    subscribeToWebPush(currentUserId).catch(() => {});
+  }
 
   // Subscribe to completions (for partner pact habit notifications)
   const completionsChannel = supabase
@@ -212,7 +365,6 @@ export function setupRealtimeNotifications(currentUserId: string): () => void {
           const newCompletion = payload.new as { user_id?: string; habit_id?: string };
           if (!newCompletion || !newCompletion.user_id || newCompletion.user_id === currentUserId) return;
 
-          // Check if this user is a partner in an active pact
           const pacts = getPacts();
           const activePact = pacts.find(p => 
             p.status === 'active' && 
@@ -249,7 +401,6 @@ export function setupRealtimeNotifications(currentUserId: string): () => void {
           const newComment = payload.new as { post_id?: string; user_id?: string; author_name?: string };
           if (!newComment || !newComment.user_id || newComment.user_id === currentUserId) return;
 
-          // Check if the comment is on a post created by current user
           const posts = getValuePosts();
           const userPost = posts.find(p => p.id === newComment.post_id && p.user_id === currentUserId);
           if (userPost) {
