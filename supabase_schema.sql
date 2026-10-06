@@ -185,7 +185,7 @@ $$;
 -- 10. Web Push Subscriptions for Native Background Notifications
 CREATE TABLE IF NOT EXISTS public.push_subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES public.users(id) ON DELETE CASCADE,
   endpoint TEXT NOT NULL UNIQUE,
   p256dh TEXT NOT NULL,
   auth TEXT NOT NULL,
